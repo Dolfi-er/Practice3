@@ -2,25 +2,31 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\CmsContentService;
 use Illuminate\Http\Request;
 use App\Support\JwstHelper;
 
 class DashboardController extends Controller
 {
-    private function base(): string { return getenv('RUST_BASE') ?: 'http://rust_iss:3000'; }
-
-    private function getJson(string $url, array $qs = []): array {
-        if ($qs) $url .= (str_contains($url,'?')?'&':'?') . http_build_query($qs);
-        $raw = @file_get_contents($url);
-        return $raw ? (json_decode($raw, true) ?: []) : [];
+    private $cmsService;
+    private $jwstService;
+    private $issService;
+    
+    public function __construct(
+        CmsContentService $cmsService,
+        JwstService $jwstService,
+        IssService $issService
+    ) {
+        $this->cmsService = $cmsService;
+        $this->jwstService = $jwstService;
+        $this->issService = $issService;
     }
 
     public function index()
     {
-        // минимум: карта МКС и пустые контейнеры, JWST-галерея подтянется через /api/jwst/feed
-        $b     = $this->base();
-        $iss   = $this->getJson($b.'/last');
-        $trend = []; // фронт сам заберёт /api/iss/trend (через nginx прокси)
+        // Получаем данные через сервисы
+        $issData = $this->issService->getLatest();
+        $cmsBlocks = $this->cmsService->getDashboardBlocks();
 
         return view('dashboard', [
             'iss' => $iss,

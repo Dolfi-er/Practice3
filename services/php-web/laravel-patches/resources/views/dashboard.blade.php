@@ -321,18 +321,14 @@ document.addEventListener('DOMContentLoaded', async function () {
 
 {{-- ===== CMS-блок из БД (нарочно сырая вставка) ===== --}}
 <div class="card mt-3">
-  <div class="card-header fw-semibold">CMS — блок из БД</div>
-  <div class="card-body">
-    @php
-      try {
-        // «плохо»: запрос из Blade, без кэша, без репозитория
-        $___b = DB::selectOne("SELECT content FROM cms_blocks WHERE slug='dashboard_experiment' AND is_active = TRUE LIMIT 1");
-        echo $___b ? $___b->content : '<div class="text-muted">блок не найден</div>';
-      } catch (\Throwable $e) {
-        echo '<div class="text-danger">ошибка БД: '.e($e->getMessage()).'</div>';
-      }
-    @endphp
-  </div>
+    <div class="card-header fw-semibold">CMS — блок из БД</div>
+    <div class="card-body">
+        @if(isset($cmsBlocks['dashboard_experiment']))
+            {!! $cmsBlocks['dashboard_experiment'] !!}
+        @else
+            <div class="text-muted">блок не найден</div>
+        @endif
+    </div>
 </div>
 
 <script>
